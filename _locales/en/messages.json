@@ -566,7 +566,12 @@
     "configurationButtonSave": {
         "message": "Save and Reboot"
     },
-
+    "configurationButtonMixer": {
+        "message": "Edit Custom Mixer"
+    },
+    "configurationButtonMixerSave": {
+        "message": "Save Mixer Settings"
+    },
     "portsHelp": {
         "message": "<strong>Note:</strong> not all combinations are valid.  When the flight controller firmware detects this the serial port configuration will be reset."
     },

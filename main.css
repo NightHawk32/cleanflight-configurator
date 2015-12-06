@@ -1342,6 +1342,11 @@ dialog {
     font-size: 10px;
 }
 
+.jBox-Modal.jBox-closeButton-title .jBox-title, .jBox-Confirm.jBox-closeButton-title .jBox-title {
+    font-size: 13px;
+    font-family: 'open_sanssemibold', Arial;
+}
+
 @media only screen and (max-width: 1055px) , only screen and (max-device-width: 1055px) {
     .content_wrapper {
         padding: 15px;

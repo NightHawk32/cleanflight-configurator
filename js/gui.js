@@ -290,6 +290,7 @@ GUI_control.prototype.content_ready = function (callback) {
             content: $(this).children('.cf_tooltiptext'),
             delayOpen: 100,
             delayClose: 100,
+            width: 180,
             position: {
                 x: 'right',
                 y: 'center'
@@ -297,6 +298,27 @@ GUI_control.prototype.content_ready = function (callback) {
             outside: 'x'
             });
         });
+    
+    new jBox('Modal', {
+    width: 600,
+    height: 350,
+    closeButton: 'title',
+    animation: false,
+    attach: $('#editmixer'),
+    title: 'Edit custom Mixer',
+    content: $('#mixercontent')
+});
+
+    new jBox('Modal', {
+    width: 600,
+    height: 350,
+    closeButton: 'title',
+    animation: false,
+    attach: $('#magneticmap'),
+    title: 'Magnetic declination',
+    content: $('#map')
+});
+
     });
 
     if (callback) callback();
