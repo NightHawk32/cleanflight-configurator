@@ -172,6 +172,9 @@ $(document).ready(function () {
                     case 'cli':
                         TABS.cli.initialize(content_ready);
                         break;
+                    case 'advanced':
+                        TABS.advanced.initialize(content_ready);
+                        break;
 
                     default:
                         console.log('Tab not found:' + tab);
