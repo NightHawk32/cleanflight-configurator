@@ -1,0 +1,16 @@
+addons:
+  apt:
+    packages:
+      - git
+
+language: node_js
+
+before_script:
+  - cd support
+  - npm install
+  - source setenv.sh
+
+script: 
+  - ls
+  - ls node_modules
+  - gulp
