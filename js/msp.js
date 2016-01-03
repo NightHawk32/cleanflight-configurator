@@ -80,6 +80,10 @@ var MSP_codes = {
     
     MSP_SERVO_MIX_RULES:    241,
     MSP_SET_SERVO_MIX_RULE: 242,
+    
+    MSP_PARAM_LIST:         247,
+    MSP_PARAM:              248,
+    MSP_SET_PARAM:          249,
 
     MSP_EEPROM_WRITE:       250,
 
@@ -718,6 +722,35 @@ var MSP = {
                     }
                 }
                 break;
+
+		/*    MSP_PARAM_LIST:         247,
+    MSP_PARAM:              248,
+    MSP_SET_PARAM:          249,*/
+            case MSP_codes.MSP_PARAM_LIST:
+		/*element:
+		 * uint16 param_count
+		 * uint16 param_index
+		 * uint8 group_id
+		 * uint16 param_id
+		 * uint8 data_type
+		 */
+		var offset = 0;
+		var param_list_element = [];
+		param_list_element["param_count"] = data.getUint16(offset);
+		offset += 2;
+		param_list_element["param_index"] = data.getUint16(offset);
+		offset += 2;
+		param_list_element["group_id"] = data.getUint8(offset++);
+		param_list_element["param_id"] = data.getUint16(offset);
+		offset += 2;
+		param_list_element["data_type"] = data.getUint8(offset++);
+		PARAM_LIST.append(param_list_element);
+		
+                break;
+            case MSP_codes.MSP_PARAM:
+                break;
+            case MSP_codes.MSP_SET_PARAM:
+               break;
 
             case MSP_codes.MSP_SET_CF_SERIAL_CONFIG:
                 console.log('Serial config saved');
