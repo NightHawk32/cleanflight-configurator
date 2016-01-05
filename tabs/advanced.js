@@ -4,14 +4,33 @@ TABS.advanced = {
     available: false
 };
 TABS.advanced.initialize = function (callback) {
+  
+    //trowing away old values, re-fetch values
     PARAM_DESC_LIST = [];
     PARAM_LIST = [];
     var paramIndex = 0;
+    
+    var DATA_TYPES = [
+       'VAR_UINT8',
+       'VAR_INT8',
+       'VAR_UINT16',
+       'VAR_INT16',
+       'VAR_UINT32',
+       'VAR_FLOAT',
+       'VAR_INT16_XYZ',
+       'VAR_MMIX'
+    ];
     
     if (GUI.active_tab != 'advanced') {
         GUI.active_tab = 'advanced';
         googleAnalytics.sendAppView('advanced');
     }
+    
+    function decode_msp_param_values() {
+        
+       
+       
+    }    
     
     function get_msp_param(group,id,callback) {
         var buffer = [];
@@ -21,9 +40,10 @@ TABS.advanced.initialize = function (callback) {
         MSP.send_message(MSP_codes.MSP_PARAM, buffer, false, callback);
     }
     
+    
     function get_msp_param_list() {
        var paramDescLength = PARAM_DESC_LIST.length;
-       if(paramIndex < paramDescLength) {
+       if(paramIndex < paramDescLength && PARAM_DESC_LIST[paramIndex] != undefined) {
           var group = PARAM_DESC_LIST[paramIndex]['group_id'];
           var id = PARAM_DESC_LIST[paramIndex]['param_id'];
           get_msp_param(group,id,get_msp_param_list);
@@ -51,54 +71,37 @@ TABS.advanced.initialize = function (callback) {
 	    MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, get_msp_param_desc_list);
 	}
     }
-    
-    if (CONFIGURATOR.connectionValid) {
-        
-        get_msp_param_desc_list()
-    }
+          
+    get_msp_param_desc_list();
     
     function load_html() {
-        $('#content').load("./tabs/advanced.html", function() {
-            create_html();
-        });
+        $('#content').load("./tabs/advanced.html", process_html);
     }
     
-    function update_html() {
-        
-    }
-    
-    function create_html() {
-        
+    function process_html() {
+      
         // translate to user-selected language
         localize();
-       
+	
+	$(".paramtree").on("click", "a.expand", function(){
+	   var parent = $(this).parent();
+	   var id=$(this).attr('id');
+	   if($(parent).hasClass("opened")) {
+	      $(parent).removeClass("opened");
+	      $(parent).addClass("closed");
+	      var open = $(parent).parent();
+	      $(open).removeClass("open");
+	      $("."+id+".treecontent").hide();
+	   }else{
+	      $(parent).removeClass("closed");
+	      $(parent).addClass("opened");
+	      var open = $(parent).parent();
+	      $(open).addClass("open");
+	      $("."+id+".treecontent").show();
+	   }
+           console.log('click');
+        });
 
-        if (TABS.advanced.available) {
-            /*var supportsDataflash = DATAFLASH.totalSize > 0;
-            
-            $(".tab-dataflash").toggleClass("supported", supportsDataflash);
-
-            if (supportsDataflash) {
-                // UI hooks
-                $('.tab-dataflash a.erase-flash').click(ask_to_erase_flash);
-                
-                $('.tab-dataflash a.erase-flash-confirm').click(flash_erase);
-                $('.tab-dataflash a.erase-flash-cancel').click(flash_erase_cancel);
-        
-                $('.tab-dataflash a.save-flash').click(flash_save_begin);
-                $('.tab-dataflash a.save-flash-cancel').click(flash_save_cancel);
-                $('.tab-dataflash a.save-flash-dismiss').click(dismiss_saving_dialog);
-                
-                update_html();
-            } else {
-                $(".tab-dataflash .note_spacer").html(chrome.i18n.getMessage('dataflashNotSupportedNote'));
-            }*/
-        } else {
-            /*$(".tab-dataflash").removeClass("supported");
-            $(".tab-dataflash .note").html(chrome.i18n.getMessage('dataflashFirmwareUpgradeRequired'));*/
-        }
-
-        
         GUI.content_ready(callback);
     }
 };
