@@ -211,6 +211,20 @@ function onOpen(openInfo) {
                                     if (semver.lt(CONFIG.apiVersion, "1.4.0")) {
                                         GUI.allowedTabs.splice(GUI.allowedTabs.indexOf('led_strip'), 1);
                                     }
+                                    
+                                    if (semver.lt(CONFIG.apiVersion, "1.15.0")) {
+                                        var tab_advanced = $('.tab_advanced');
+                                        if(tab_advanced.length != 0) {
+                                           tab_advanced.remove();
+                                        }
+                                    }
+                                    
+                                    if (semver.gte(CONFIG.apiVersion, "1.15.0")) {
+                                        var tab_cli = $('.tab_cli');
+                                        if(tab_cli.length != 0) {
+                                           tab_cli.remove();
+                                        }
+                                    }
 
                                     GUI.canChangePidController = semver.gte(CONFIG.apiVersion, CONFIGURATOR.pidControllerChangeMinApiVersion);
 

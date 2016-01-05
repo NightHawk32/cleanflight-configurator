@@ -198,6 +198,8 @@ var FAILSAFE_CONFIG = {
     failsafe_procedure:             0
 };
 
+var PARAM_DESC_LIST = [];
+
 var PARAM_LIST = [];
 
 var RXFAIL_CONFIG = [];

@@ -4,26 +4,57 @@ TABS.advanced = {
     available: false
 };
 TABS.advanced.initialize = function (callback) {
-    PARAM_LIST = undefined;
-    var index = 0;
-    var buffer = [];
-    buffer.push(lowByte(index));
-    buffer.push(highByte(index))
+    PARAM_DESC_LIST = [];
+    PARAM_LIST = [];
+    var paramIndex = 0;
     
     if (GUI.active_tab != 'advanced') {
         GUI.active_tab = 'advanced';
         googleAnalytics.sendAppView('advanced');
     }
     
+    function get_msp_param(group,id,callback) {
+        var buffer = [];
+        buffer.push(group);
+        buffer.push(lowByte(id));
+        buffer.push(highByte(id));
+        MSP.send_message(MSP_codes.MSP_PARAM, buffer, false, callback);
+    }
+    
+    function get_msp_param_list() {
+       var paramDescLength = PARAM_DESC_LIST.length;
+       if(paramIndex < paramDescLength) {
+          var group = PARAM_DESC_LIST[paramIndex]['group_id'];
+          var id = PARAM_DESC_LIST[paramIndex]['param_id'];
+          get_msp_param(group,id,get_msp_param_list);
+	  paramIndex++;
+       } else {
+	  load_html(); 
+       }
+    }
+    
+    function get_msp_param_desc_list() {
+        var buffer = [];
+        if( PARAM_DESC_LIST.length != 0) {
+	    var currentIndex=PARAM_DESC_LIST.length-1;
+	    if( currentIndex < PARAM_DESC_LIST[currentIndex]['param_count']-1 ) {
+	        buffer.push(lowByte( currentIndex+1 ));
+                buffer.push(highByte( currentIndex+1 ));
+	        MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, get_msp_param_desc_list);
+	    } else {
+	        console.log(PARAM_DESC_LIST.length + ' MSP param descriptors fetched');
+		get_msp_param_list()
+	    } 
+	} else {
+	    buffer.push( 0 );
+            buffer.push( 0 );
+	    MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, get_msp_param_desc_list);
+	}
+    }
+    
     if (CONFIGURATOR.connectionValid) {
-        TABS.advanced.available = semver.gte(CONFIG.apiVersion, "1.6.0");
         
-        if (!TABS.advanced.available) {
-            load_html();
-            return;
-        }
-        
-        MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, load_html);
+        get_msp_param_desc_list()
     }
     
     function load_html() {

@@ -736,18 +736,34 @@ var MSP = {
 		 */
 		var offset = 0;
 		var param_list_element = [];
-		param_list_element["param_count"] = data.getUint16(offset);
+		param_list_element['param_count'] = data.getUint16(offset,1);
 		offset += 2;
-		param_list_element["param_index"] = data.getUint16(offset);
+		param_list_element['param_index'] = data.getUint16(offset,1);
 		offset += 2;
-		param_list_element["group_id"] = data.getUint8(offset++);
-		param_list_element["param_id"] = data.getUint16(offset);
+		param_list_element['group_id'] = data.getUint8(offset++,1);
+		param_list_element['param_id'] = data.getUint16(offset,1);
 		offset += 2;
-		param_list_element["data_type"] = data.getUint8(offset++);
-		PARAM_LIST.append(param_list_element);
-		
+		param_list_element['data_type'] = data.getUint8(offset++,1);
+		PARAM_DESC_LIST[param_list_element['param_index']]=param_list_element;
                 break;
             case MSP_codes.MSP_PARAM:
+	        var offset = 0;
+		var param_list_element = [];
+		param_list_element['group_id'] = data.getUint8(offset++,1);
+		param_list_element['param_id'] = data.getUint16(offset,1);
+		offset += 2;
+		param_list_element['data_type'] = data.getUint8(offset++,1);
+		param_list_element['value_min'] = data.getInt32(offset,1);
+		offset += 4;
+		param_list_element['value_max'] = data.getInt32(offset,1);
+		offset += 4;
+		var buffer = data.buffer;
+                param_list_element['value'] = buffer.slice(offset,data.byteLength);
+
+		if(PARAM_LIST[param_list_element['group_id']] == undefined) {
+		   PARAM_LIST[param_list_element['group_id']] = [];
+		}
+		PARAM_LIST[param_list_element['group_id']][param_list_element['param_id']] = param_list_element;
                 break;
             case MSP_codes.MSP_SET_PARAM:
                break;
