@@ -26,8 +26,37 @@ TABS.advanced.initialize = function (callback) {
         googleAnalytics.sendAppView('advanced');
     }
     
+    function collapse_all() {
+       $('li.bar').trigger('click');
+    }
+    
+    function generate_output() {
+       PARAM_LIST.forEach(function(elementGroup,indexGroup){
+          $('ul.paramtree').append('<li id="group'+indexGroup+'" class="bar open">'
+                                +'<div class="group'+indexGroup+' icon opened"><a href="#"></a></div>'
+				+'<a href="#">GROUP'+indexGroup+'</a>'
+				+'</li>'
+				+'<div class="group'+indexGroup+' treecontent">'
+				+'</div>'
+				);
+	   elementGroup.forEach(function(elementVar,indexVar){
+	      $('div.group'+indexGroup+'.treecontent').append('<div id="var'+indexVar+'" class="variable">'
+                                              +'<div class="one">Variable'+indexVar+'</div>'
+                                              +'<div class="two"><input /></div>'
+                                              +'<div class="three">min: xxx</div>'
+                                              +'<div class="four">max: xxx</div>'
+                                              +'<div class="five">default: xxx</div>'
+                                              +'</div>'
+					      );
+	   });
+       });
+       
+    }
+    
     function decode_msp_param_values() {
-        
+        a.forEach(function(entry) {
+    console.log(entry);
+});
        
        
     }    
@@ -49,7 +78,7 @@ TABS.advanced.initialize = function (callback) {
           get_msp_param(group,id,get_msp_param_list);
 	  paramIndex++;
        } else {
-	  load_html(); 
+	  load_html();
        }
     }
     
@@ -83,22 +112,25 @@ TABS.advanced.initialize = function (callback) {
         // translate to user-selected language
         localize();
 	
+	generate_output();
+	
 	$(".paramtree").on("click", "li.bar", function(){
 	   var id=$(this).attr("id");
 	   if($(this).hasClass("open")) {
 	      $(this).removeClass("open");
-	      $("icon",this).removeClass("opened");
-	      $("icon",this).addClass("closed");
+	      $(".icon",this).removeClass("opened");
+	      $(".icon",this).addClass("closed");
 	      $("."+id+".treecontent").hide();
 	   }else{
 	      $(this).addClass("open");
-	      $("icon",this).removeClass("closed");
-	      $("icon",this).addClass("opened");
+	      $(".icon",this).removeClass("closed");
+	      $(".icon",this).addClass("opened");
 	      $("."+id+".treecontent").show();
 	   }
            console.log('click');
         });
-
+        
+        collapse_all();
         GUI.content_ready(callback);
     }
 };
