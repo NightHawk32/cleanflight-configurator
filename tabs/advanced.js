@@ -4,282 +4,242 @@ TABS.advanced = {
     available: false
 };
 TABS.advanced.initialize = function (callback) {
-    var 
-        self = this,
-        saveCancelled, eraseCancelled;
-
+  
+    //trowing away old values, re-fetch values
+    PARAM_DESC_LIST = [];
+    PARAM_LIST = [];
+    var paramIndex = 0;
+    
+    // this should go to a json file
+    // name, description, .....
+    var GROUP_INFO = [
+      {"name":"System"},
+      {"name":"Sensor"},
+      {"name":"RC"},
+      {"name":"Drive"},
+      {"name":"Motor Mix"},
+    ];
+    
+    // group,id
+    // name, description, defaults, ....
+    var VAR_INFO = {
+      "0,0": {"name":"Hello"},
+      "0,1": {"name":"Looptime"},
+      "0,2": {"name":"EMF Avoidance"},
+      
+      "1,0": {"name":"Align Gyro"},
+      "1,1": {"name":"Align Acc"},
+      "1,2": {"name":"Align Mag"},
+      "1,3": {"name":"Gyro LPF"},
+      "1,4": {"name":"Acc Zero"},
+      "1,5": {"name":"Acc Gain"},
+      "1,6": {"name":"Mag Zero"},
+      
+      "2,0": {"name":"Mid"},
+      "2,1": {"name":"Min Check"},
+      "2,2": {"name":"AMax Check"},
+      "2,3": {"name":"RSSI Channel"},
+      "2,4": {"name":"RSSI Scale"},
+      "2,5": {"name":"RSSI PPM Invert"},
+      "2,6": {"name":"RC Smoothing"},
+      "2,7": {"name":"Input Filtering Mode"},
+      
+      "3,0": {"name":"Min Throttle"},
+      "3,1": {"name":"Max Throttle"},
+      "3,2": {"name":"Min Command"},
+      
+      "4,0": {"name":"Motor 0"},
+      "4,1": {"name":"Motor 1"},
+      "4,2": {"name":"Motor 2"},
+      "4,3": {"name":"Motor 3"},
+      "4,4": {"name":"Motor 4"},
+      "4,5": {"name":"Motor 5"},
+      "4,6": {"name":"Motor 6"},
+      "4,7": {"name":"Motor 7"},
+      "4,8": {"name":"Motor 8"},
+      "4,9": {"name":"Motor 9"},
+      "4,10": {"name":"Motor 10"},
+      "4,11": {"name":"Motor 11"},
+    };
+    
+    var DATA_TYPES = {
+       'VAR_UINT8'      :0,
+       'VAR_INT8'       :1,
+       'VAR_UINT16'     :2,
+       'VAR_INT16'      :3,
+       'VAR_UINT32'     :4,
+       'VAR_FLOAT'      :5,
+       'VAR_INT16_XYZ'  :6,
+       'VAR_MMIX'       :7,
+    };
+    
     if (GUI.active_tab != 'advanced') {
         GUI.active_tab = 'advanced';
         googleAnalytics.sendAppView('advanced');
     }
-
-    var 
-        requested_properties = [],
-        samples = 0,
-        requests = 0,
-        log_buffer = [];
-
-    if (CONFIGURATOR.connectionValid) {
-        TABS.advanced.available = semver.gte(CONFIG.apiVersion, "1.6.0");
-        
-        if (!TABS.advanced.available) {
-            load_html();
-            return;
-        }
-        
-        MSP.send_message(MSP_codes.MSP_DATAFLASH_SUMMARY, false, false, load_html);
+    
+    function collapse_all() {
+       $('li.bar').trigger('click');
     }
+    
+    function generate_output() {
+       PARAM_LIST.forEach(function(elementGroup,indexGroup){
+          $('ul.paramtree').append('<li id="group'+indexGroup+'" class="bar open">'
+                                +'<div class="group'+indexGroup+' icon opened"><a href="#"></a></div>'
+                                +'<a href="#">'+GROUP_INFO[indexGroup]["name"]+'</a>'
+                                +'</li>'
+                                +'<div class="group'+indexGroup+' treecontent">'
+                                +'</div>'
+                                );
+          elementGroup.forEach(function(elementVar,indexVar){
+              $('div.group'+indexGroup+'.treecontent').append('<div id="var'+indexVar+'" class="variable">'
+                                              +'<div class="one">'+VAR_INFO[indexGroup+","+indexVar]["name"]+'</div>'
+                                              +'<div class="two"><input /></div>'
+                                              +'<div class="three">min: '+PARAM_LIST[indexGroup][indexVar]["value_min"]+'</div>'
+                                              +'<div class="four">max: '+PARAM_LIST[indexGroup][indexVar]["value_max"]+'</div>'
+                                              +'<div class="five">default: xxx</div>'
+                                              +'</div>'
+                                              );
+          });
+       });
+       
+    }
+    
+    function decode_msp_param_values() {
+        PARAM_LIST.forEach(function(elementGroup,indexGroup){
+           elementGroup.forEach(function(elementVar,indexVar){
+	     var offset=0;
+	     var values=[];
+	     var data = new DataView(PARAM_LIST[indexGroup][indexVar]['value']);
+	     var data_type = PARAM_LIST[indexGroup][indexVar]['data_type'];
+	     
+	     switch (data_type) {
+	       case DATA_TYPES['VAR_UINT8']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint8(offset,1);
+		   offset+=1;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT8']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt8(offset,1);
+		   offset+=1;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_UINT16']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT16']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_UINT32']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint32(offset,1);
+		   offset+=4;
+		 }		 
+		 break;
+	       case DATA_TYPES['VAR_FLOAT']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getFloat32(offset,1);
+		   offset+=4;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT16_XYZ']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_MMIX']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getFloat32(offset,1);
+		   offset+=4;
+		 }
+		 break;
+	     }
+	     PARAM_LIST[indexGroup][indexVar]['value']=values;
+           });
+        });
+        load_html();       
+    }    
+    
+    function get_msp_param(group,id,callback) {
+        var buffer = [];
+        buffer.push(group);
+        buffer.push(lowByte(id));
+        buffer.push(highByte(id));
+        MSP.send_message(MSP_codes.MSP_PARAM, buffer, false, callback);
+    }
+    
+    
+    function get_msp_param_list() {
+       var paramDescLength = PARAM_DESC_LIST.length;
+       if(paramIndex < paramDescLength && PARAM_DESC_LIST[paramIndex] != undefined) {
+          var group = PARAM_DESC_LIST[paramIndex]['group_id'];
+          var id = PARAM_DESC_LIST[paramIndex]['param_id'];
+          get_msp_param(group,id,get_msp_param_list);
+          paramIndex++;
+       } else {
+          decode_msp_param_values();          
+       }
+    }
+    
+    function get_msp_param_desc_list() {
+        var buffer = [];
+        if( PARAM_DESC_LIST.length != 0) {
+            var currentIndex=PARAM_DESC_LIST.length-1;
+            if( currentIndex < PARAM_DESC_LIST[currentIndex]['param_count']-1 ) {
+                buffer.push(lowByte( currentIndex+1 ));
+                buffer.push(highByte( currentIndex+1 ));
+                MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, get_msp_param_desc_list);
+            } else {
+                console.log(PARAM_DESC_LIST.length + ' MSP param descriptors fetched');
+                get_msp_param_list()
+            } 
+         } else {
+            buffer.push( 0 );
+            buffer.push( 0 );
+           MSP.send_message(MSP_codes.MSP_PARAM_LIST, buffer, false, get_msp_param_desc_list);
+         }
+    }
+          
+    get_msp_param_desc_list();
     
     function load_html() {
-        $('#content').load("./tabs/advanced.html", function() {
-            create_html();
-        });
+        $('#content').load("./tabs/advanced.html", process_html);
     }
     
-    function formatFilesize(bytes) {
-        if (bytes < 1024) {
-            return bytes + "B";
-        }
-        
-        var kilobytes = bytes / 1024;
-        
-        if (kilobytes < 1024) {
-            return Math.round(kilobytes) + "kB";
-        }
-        
-        var megabytes = kilobytes / 1024;
-        
-        return megabytes.toFixed(1) + "MB";
-    }
-    
-    function update_html() {
-        if (DATAFLASH.usedSize > 0) {
-            $(".dataflash-used").css({
-                width: (DATAFLASH.usedSize / DATAFLASH.totalSize * 100) + "%",
-                display: 'block'
-            });
-            
-            $(".dataflash-used div").text('Used space ' + formatFilesize(DATAFLASH.usedSize));
-        } else {
-            $(".dataflash-used").css({
-                display: 'none'
-            });
-        }
-
-        if (DATAFLASH.totalSize - DATAFLASH.usedSize > 0) {
-            $(".dataflash-free").css({
-                width: ((DATAFLASH.totalSize - DATAFLASH.usedSize) / DATAFLASH.totalSize * 100) + "%",
-                display: 'block'
-            });
-            $(".dataflash-free div").text('Free space ' + formatFilesize(DATAFLASH.totalSize - DATAFLASH.usedSize));
-        } else {
-            $(".dataflash-free").css({
-                display: 'none'
-            });
-        }
-        
-        $(".btn a.erase-flash, .btn a.save-flash").toggleClass("disabled", DATAFLASH.usedSize == 0);
-    }
-    
-    function create_html() {
-        
+    function process_html() {
+      
         // translate to user-selected language
         localize();
-       
 
-        if (TABS.advanced.available) {
-            var supportsDataflash = DATAFLASH.totalSize > 0;
-            
-            $(".tab-dataflash").toggleClass("supported", supportsDataflash);
+        generate_output();
 
-            if (supportsDataflash) {
-                // UI hooks
-                $('.tab-dataflash a.erase-flash').click(ask_to_erase_flash);
-                
-                $('.tab-dataflash a.erase-flash-confirm').click(flash_erase);
-                $('.tab-dataflash a.erase-flash-cancel').click(flash_erase_cancel);
+        $(".paramtree").on("click", "li.bar", function(){
+           var id=$(this).attr("id");
+           if($(this).hasClass("open")) {
+              $(this).removeClass("open");
+              $(".icon",this).removeClass("opened");
+              $(".icon",this).addClass("closed");
+              $("."+id+".treecontent").hide();
+           }else{
+              $(this).addClass("open");
+              $(".icon",this).removeClass("closed");
+              $(".icon",this).addClass("opened");
+              $("."+id+".treecontent").show();
+           }
+           console.log('click');
+        });
         
-                $('.tab-dataflash a.save-flash').click(flash_save_begin);
-                $('.tab-dataflash a.save-flash-cancel').click(flash_save_cancel);
-                $('.tab-dataflash a.save-flash-dismiss').click(dismiss_saving_dialog);
-                
-                update_html();
-            } else {
-                $(".tab-dataflash .note_spacer").html(chrome.i18n.getMessage('dataflashNotSupportedNote'));
-            }
-        } else {
-            $(".tab-dataflash").removeClass("supported");
-            $(".tab-dataflash .note").html(chrome.i18n.getMessage('dataflashFirmwareUpgradeRequired'));
-        }
-
-        
+        collapse_all();
         GUI.content_ready(callback);
-    }
-    
-    // IO related methods
-    function zeroPad(value, width) {
-        value = "" + value;
-        
-        while (value.length < width) {
-            value = "0" + value;
-        }
-        
-        return value;
-    }
-    
-    function flash_save_cancel() {
-        saveCancelled = true;
-    }
-    
-    function show_saving_dialog() {
-        $(".dataflash-saving progress").attr("value", 0);
-        saveCancelled = false;
-        $(".dataflash-saving").removeClass("done");
-        
-        $(".dataflash-saving")[0].showModal();
-    }
-    
-    function dismiss_saving_dialog() {
-        $(".dataflash-saving")[0].close();
-    }
-    
-    function mark_saving_dialog_done() {
-        $(".dataflash-saving").addClass("done");
-    }
-    
-    function flash_update_summary(onDone) {
-        MSP.send_message(MSP_codes.MSP_DATAFLASH_SUMMARY, false, false, function() {
-            update_html();
-            
-            if (onDone) {
-                onDone();
-            }
-        });
-    }
-    
-    function flash_save_begin() {
-        if (GUI.connected_to) {
-            // Begin by refreshing the occupied size in case it changed while the tab was open
-            flash_update_summary(function() {
-                var
-                    maxBytes = DATAFLASH.usedSize;
-                
-                prepare_file(function(fileWriter) {
-                    var
-                        nextAddress = 0;
-                    
-                    show_saving_dialog();
-                    
-                    function onChunkRead(chunkAddress, chunkDataView) {
-                        if (chunkDataView != null) {
-                            // Did we receive any data?
-                            if (chunkDataView.byteLength > 0) {
-                                nextAddress += chunkDataView.byteLength;
-                                
-                                $(".dataflash-saving progress").attr("value", nextAddress / maxBytes * 100);
-        
-                                var 
-                                    blob = new Blob([chunkDataView]);
-                                
-                                fileWriter.onwriteend = function(e) {
-                                    if (saveCancelled || nextAddress >= maxBytes) {
-                                        if (saveCancelled) {
-                                            dismiss_saving_dialog();
-                                        } else {
-                                            mark_saving_dialog_done();
-                                        }
-                                    } else {
-                                        MSP.dataflashRead(nextAddress, onChunkRead);
-                                    }
-                                };
-                                
-                                fileWriter.write(blob);
-                            } else {
-                                // A zero-byte block indicates end-of-file, so we're done
-                                mark_saving_dialog_done();
-                            }
-                        } else {
-                            // There was an error with the received block (address didn't match the one we asked for), retry
-                            MSP.dataflashRead(nextAddress, onChunkRead);
-                        }
-                    }
-                    
-                    // Fetch the initial block
-                    MSP.dataflashRead(nextAddress, onChunkRead);
-                });
-            });
-        }
-    }
-    
-    function prepare_file(onComplete) {
-        var 
-            date = new Date(),
-            filename = 'blackbox_log_' + date.getFullYear() + '-'  + zeroPad(date.getMonth() + 1, 2) + '-' 
-                + zeroPad(date.getDate(), 2) + '_' + zeroPad(date.getHours(), 2) + zeroPad(date.getMinutes(), 2) 
-                + zeroPad(date.getSeconds(), 2);
-        
-        chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: filename, 
-                accepts: [{extensions: ['TXT']}]}, function(fileEntry) {
-            var error = chrome.runtime.lastError;
-            
-            if (error) {
-                console.error(error.message);
-                
-                if (error.message != "User cancelled") {
-                    GUI.log(chrome.i18n.getMessage('dataflashFileWriteFailed'));
-                }
-                return;
-            }
-            
-            // echo/console log path specified
-            chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
-                console.log('Dataflash dump file path: ' + path);
-            });
-
-            fileEntry.createWriter(function (fileWriter) {
-                fileWriter.onerror = function (e) {
-                    console.error(e);
-
-                    // stop logging if the procedure was/is still running
-                };
-
-                onComplete(fileWriter);
-            }, function (e) {
-                // File is not readable or does not exist!
-                console.error(e);
-                GUI.log(chrome.i18n.getMessage('dataflashFileWriteFailed'));
-            });
-        });
-    }
-    
-    function ask_to_erase_flash() {
-        eraseCancelled = false;
-        $(".dataflash-confirm-erase").removeClass('erasing');
-
-        $(".dataflash-confirm-erase")[0].showModal(); 
-    }
-
-    function poll_for_erase_completion() {
-        flash_update_summary(function() {
-            if (!eraseCancelled) {
-                if (DATAFLASH.ready) {
-                    $(".dataflash-confirm-erase")[0].close();
-                } else {
-                    setTimeout(poll_for_erase_completion, 500);
-                }
-            }
-        });
-    }
-    
-    function flash_erase() {
-        $(".dataflash-confirm-erase").addClass('erasing');
-        
-        MSP.send_message(MSP_codes.MSP_DATAFLASH_ERASE, false, false, poll_for_erase_completion);
-    }
-    
-    function flash_erase_cancel() {
-        eraseCancelled = true;
-        $(".dataflash-confirm-erase")[0].close();
     }
 };
 

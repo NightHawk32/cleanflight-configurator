@@ -80,6 +80,10 @@ var MSP_codes = {
     
     MSP_SERVO_MIX_RULES:    241,
     MSP_SET_SERVO_MIX_RULE: 242,
+    
+    MSP_PARAM_LIST:         247,
+    MSP_PARAM:              248,
+    MSP_SET_PARAM:          249,
 
     MSP_EEPROM_WRITE:       250,
 
@@ -718,6 +722,51 @@ var MSP = {
                     }
                 }
                 break;
+
+		/*    MSP_PARAM_LIST:         247,
+    MSP_PARAM:              248,
+    MSP_SET_PARAM:          249,*/
+            case MSP_codes.MSP_PARAM_LIST:
+		/*element:
+		 * uint16 param_count
+		 * uint16 param_index
+		 * uint8 group_id
+		 * uint16 param_id
+		 * uint8 data_type
+		 */
+		var offset = 0;
+		var param_list_element = [];
+		param_list_element['param_count'] = data.getUint16(offset,1);
+		offset += 2;
+		param_list_element['param_index'] = data.getUint16(offset,1);
+		offset += 2;
+		param_list_element['group_id'] = data.getUint8(offset++,1);
+		param_list_element['param_id'] = data.getUint16(offset,1);
+		offset += 2;
+		param_list_element['data_type'] = data.getUint8(offset++,1);
+		PARAM_DESC_LIST[param_list_element['param_index']]=param_list_element;
+                break;
+            case MSP_codes.MSP_PARAM:
+	        var offset = 0;
+		var param_list_element = [];
+		param_list_element['group_id'] = data.getUint8(offset++,1);
+		param_list_element['param_id'] = data.getUint16(offset,1);
+		offset += 2;
+		param_list_element['data_type'] = data.getUint8(offset++,1);
+		param_list_element['value_min'] = data.getInt32(offset,1);
+		offset += 4;
+		param_list_element['value_max'] = data.getInt32(offset,1);
+		offset += 4;
+		var buffer = data.buffer;
+                param_list_element['value'] = buffer.slice(offset,data.byteLength);
+
+		if(PARAM_LIST[param_list_element['group_id']] == undefined) {
+		   PARAM_LIST[param_list_element['group_id']] = [];
+		}
+		PARAM_LIST[param_list_element['group_id']][param_list_element['param_id']] = param_list_element;
+                break;
+            case MSP_codes.MSP_SET_PARAM:
+               break;
 
             case MSP_codes.MSP_SET_CF_SERIAL_CONFIG:
                 console.log('Serial config saved');

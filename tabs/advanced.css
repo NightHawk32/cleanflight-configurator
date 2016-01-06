@@ -122,14 +122,6 @@
     background-color:#bfbfbf;
     }
     
-.subtreecontent {
-    width: calc(100% - 35px);
-    padding-bottom:3px;
-    float:left;
-    background-color:#7e7e7e;
-    margin-left:29px;
-    }
-    
 .treecontent input {
     width:50%;
     float:left;
@@ -182,24 +174,6 @@
 
     }
     
-.subgroup {
-    background-color: white;
-    float:left;
-    margin-top: 5px;
-    border-radius: 0px;
-    width: calc(100% - 35px) !important;
-    margin-left: 28px;
-    border: 1px solid silver;
-    color: white !important;
-    background-color: #7e7e7e !important;
-    }
-    
-.subgroup a {
-    color: white !important;
-    text-shadow: 1px 1px rgba(0,0,0,0.50);
-
-    }
-    
 .open {
     background-color: #59aa29 !important;
     color: white !important;
@@ -211,7 +185,14 @@
 
     }
     
+.paramtree li:hover a {
+    color: #fff;
+    text-shadow: 1px 1px rgba(0,0,0,0.50);
+    }
     
+.paramtree .closed:hover a {
+    background-color: #509924; 
+    }    
 
     
     
