@@ -83,20 +83,17 @@ TABS.advanced.initialize = function (callback) {
         // translate to user-selected language
         localize();
 	
-	$(".paramtree").on("click", "a.expand", function(){
-	   var parent = $(this).parent();
-	   var id=$(this).attr('id');
-	   if($(parent).hasClass("opened")) {
-	      $(parent).removeClass("opened");
-	      $(parent).addClass("closed");
-	      var open = $(parent).parent();
-	      $(open).removeClass("open");
+	$(".paramtree").on("click", "li.bar", function(){
+	   var id=$(this).attr("id");
+	   if($(this).hasClass("open")) {
+	      $(this).removeClass("open");
+	      $("icon",this).removeClass("opened");
+	      $("icon",this).addClass("closed");
 	      $("."+id+".treecontent").hide();
 	   }else{
-	      $(parent).removeClass("closed");
-	      $(parent).addClass("opened");
-	      var open = $(parent).parent();
-	      $(open).addClass("open");
+	      $(this).addClass("open");
+	      $("icon",this).removeClass("closed");
+	      $("icon",this).addClass("opened");
 	      $("."+id+".treecontent").show();
 	   }
            console.log('click');

@@ -185,7 +185,14 @@
 
     }
     
+.paramtree li:hover a {
+    color: #fff;
+    text-shadow: 1px 1px rgba(0,0,0,0.50);
+    }
     
+.paramtree .closed:hover a {
+    background-color: #509924; 
+    }    
 
     
     
