@@ -62,16 +62,16 @@ TABS.advanced.initialize = function (callback) {
       "4,11": {"name":"Motor 11"},
     };
     
-    var DATA_TYPES = [
-       'VAR_UINT8',
-       'VAR_INT8',
-       'VAR_UINT16',
-       'VAR_INT16',
-       'VAR_UINT32',
-       'VAR_FLOAT',
-       'VAR_INT16_XYZ',
-       'VAR_MMIX'
-    ];
+    var DATA_TYPES = {
+       'VAR_UINT8'      :0,
+       'VAR_INT8'       :1,
+       'VAR_UINT16'     :2,
+       'VAR_INT16'      :3,
+       'VAR_UINT32'     :4,
+       'VAR_FLOAT'      :5,
+       'VAR_INT16_XYZ'  :6,
+       'VAR_MMIX'       :7,
+    };
     
     if (GUI.active_tab != 'advanced') {
         GUI.active_tab = 'advanced';
@@ -106,11 +106,67 @@ TABS.advanced.initialize = function (callback) {
     }
     
     function decode_msp_param_values() {
-        a.forEach(function(entry) {
-    console.log(entry);
-});
-       
-       
+        PARAM_LIST.forEach(function(elementGroup,indexGroup){
+           elementGroup.forEach(function(elementVar,indexVar){
+	     var offset=0;
+	     var values=[];
+	     var data = new DataView(PARAM_LIST[indexGroup][indexVar]['value']);
+	     var data_type = PARAM_LIST[indexGroup][indexVar]['data_type'];
+	     
+	     switch (data_type) {
+	       case DATA_TYPES['VAR_UINT8']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint8(offset,1);
+		   offset+=1;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT8']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt8(offset,1);
+		   offset+=1;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_UINT16']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT16']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_UINT32']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getUint32(offset,1);
+		   offset+=4;
+		 }		 
+		 break;
+	       case DATA_TYPES['VAR_FLOAT']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getFloat32(offset,1);
+		   offset+=4;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_INT16_XYZ']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getInt16(offset,1);
+		   offset+=2;
+		 }
+		 break;
+	       case DATA_TYPES['VAR_MMIX']:
+		 for(i=0;i<8;i++){
+		   values[i]=data.getFloat32(offset,1);
+		   offset+=4;
+		 }
+		 break;
+	     }
+	     PARAM_LIST[indexGroup][indexVar]['value']=values;
+           });
+        });
+        load_html();       
     }    
     
     function get_msp_param(group,id,callback) {
@@ -130,7 +186,7 @@ TABS.advanced.initialize = function (callback) {
           get_msp_param(group,id,get_msp_param_list);
           paramIndex++;
        } else {
-          load_html();
+          decode_msp_param_values();          
        }
     }
     
