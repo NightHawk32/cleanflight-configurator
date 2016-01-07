@@ -1479,5 +1479,8 @@
     },
     "tabAdvanced": {
     "message": "Advanced"
+    },
+    "advancedFeaturesHelp": {
+        "message": "<strong>Note:</strong> Placeholder text."
     }
 }
