@@ -106,7 +106,7 @@
     border-radius:5px;
     width:calc(100% - 45px);
     margin-left:28px;
-    border: 1px solid silver;
+    border: 1px solid #969696;
     padding-left:10px;
     }
   
@@ -128,12 +128,18 @@
     background-color: white;
     border: 1px solid silver;
     border-radius: 3px;
+    padding-left: 3px;
+    height: 20px;
+    line-height: 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: normal;
     }
 
 .one {
     float: left;
     width: 40%;
-    padding-top:5px;
+    padding-top:7px;
     padding-bottom:5px;
     font-weight: bold;
     }
@@ -148,18 +154,18 @@
 .three {
     float: left;
     width: 15%;
-    padding-top:5px;
+    padding-top:7px;
     padding-bottom:5px;
-    color: #AAA;
+    color: #4F4F4F;
     font-style:italic;
     }
 
 .four {
     float: left;
     width: 15%;
-    padding-top:5px;
+    padding-top:7px;
     padding-bottom:5px;
-    color: #AAA;
+    color: #4F4F4F;
     font-style:italic;
 
     }
@@ -167,9 +173,9 @@
 .five {
     float: left;
     width: 15%;
-    padding-top:5px;
+    padding-top:7px;
     padding-bottom:5px;
-    color: #AAA;
+    color: #4F4F4F;
     font-style:italic;
 
     }
